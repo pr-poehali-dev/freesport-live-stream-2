@@ -267,37 +267,12 @@ def get_twitch_stream(channel: str) -> Optional[str]:
 
 
 def get_vk_stream(video_id: str) -> Optional[str]:
-    '''Получает HLS ссылку на видео/стрим VK через API'''
+    '''Получает embed URL для VK видео (используем iframe player)'''
     try:
         oid, vid = video_id.split('_')
-        
-        url = f'https://vk.com/video{video_id}'
-        req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml',
-            'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
-            'Referer': 'https://vk.com/'
-        })
-        
-        with urllib.request.urlopen(req, timeout=10) as response:
-            html = response.read().decode('utf-8', errors='ignore')
-            
-            import re
-            m3u8_match = re.search(r'"url(\d+)":"([^"]+\\.m3u8[^"]*)"', html)
-            
-            if m3u8_match:
-                m3u8_url = m3u8_match.group(2).replace('\\/', '/')
-                print(f'[VK] Found m3u8 URL: {m3u8_url}')
-                return m3u8_url
-            
-            mp4_match = re.search(r'"url(\d+)":"([^"]+\\.mp4[^"]*)"', html)
-            if mp4_match:
-                mp4_url = mp4_match.group(2).replace('\\/', '/')
-                print(f'[VK] Found mp4 URL: {mp4_url}')
-                return mp4_url
-            
-            print(f'[VK] No video URL found for {video_id}')
-            return None
+        embed_url = f'https://vk.com/video_ext.php?oid={oid}&id={vid}&autoplay=1'
+        print(f'[VK] Returning embed URL: {embed_url}')
+        return embed_url
         
     except Exception as e:
         print(f'[VK] Error for {video_id}: {str(e)}')
