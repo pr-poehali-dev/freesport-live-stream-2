@@ -19,7 +19,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   
   const isKickVideo = videoUrl.includes('kick.com');
   const isTwitchVideo = videoUrl.includes('twitch.tv');
-  const useCustomPlayer = false;
+  const useCustomPlayer = isKickVideo || isTwitchVideo;
 
   const getChannelAndPlatform = (url: string): { channel: string; platform: string } | null => {
     if (url.includes('kick.com')) {
@@ -128,9 +128,17 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       autoplay: true,
       preload: 'auto',
       fluid: true,
+      html5: {
+        vhs: {
+          overrideNative: true,
+          withCredentials: false
+        },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false
+      },
       sources: [{
         src: streamUrl,
-        type: streamUrl.includes('.m3u8') ? 'application/x-mpegURL' : 'video/mp4'
+        type: 'application/x-mpegURL'
       }]
     });
 
