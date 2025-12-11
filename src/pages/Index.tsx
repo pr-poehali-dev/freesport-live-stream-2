@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
-  const [activeSection, setActiveSection] = useState<'broadcasts' | 'news'>('broadcasts');
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [liveBroadcast, setLiveBroadcast] = useState<any>(null);
@@ -15,13 +14,6 @@ const Index = () => {
 
   useEffect(() => {
     loadData();
-    
-    const hash = window.location.hash;
-    if (hash === '#news') {
-      setActiveSection('news');
-    } else if (hash === '#broadcasts') {
-      setActiveSection('broadcasts');
-    }
   }, []);
 
   const loadData = async () => {
@@ -64,87 +56,64 @@ const Index = () => {
           </section>
         )}
 
-        <div id="broadcasts" className="flex gap-4 mb-6 border-b">
-          <Button
-            variant={activeSection === 'broadcasts' ? 'default' : 'ghost'}
-            className="rounded-b-none font-semibold"
-            onClick={() => setActiveSection('broadcasts')}
-          >
-            <Icon name="Radio" size={20} className="mr-2" />
-            Трансляции
-          </Button>
-          <Button
-            variant={activeSection === 'news' ? 'default' : 'ghost'}
-            className="rounded-b-none font-semibold"
-            onClick={() => setActiveSection('news')}
-          >
-            <Icon name="Newspaper" size={20} className="mr-2" />
-            Новости
-          </Button>
-        </div>
+        <section id="broadcasts" className="mb-16">
+          <h3 className="text-2xl font-bold mb-6">Предстоящие трансляции</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            {broadcasts.map((broadcast) => (
+              <Card key={broadcast.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <CardTitle className="text-lg">{broadcast.title}</CardTitle>
+                    <Badge variant="outline" className="shrink-0">
+                      <Icon name="Clock" size={14} className="mr-1" />
+                      {broadcast.scheduled_time?.substring(0, 5)}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted-foreground">{broadcast.scheduled_date}</p>
+                    <Button variant="outline" size="sm">
+                      <Icon name="Bell" size={16} className="mr-2" />
+                      Напомнить
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
-        {activeSection === 'broadcasts' && (
-          <section>
-            <h3 className="text-xl font-bold mb-6">Предстоящие трансляции</h3>
-            <div className="grid gap-4 md:grid-cols-2">
-              {broadcasts.map((broadcast) => (
-                <Card key={broadcast.id} className="hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <CardTitle className="text-lg">{broadcast.title}</CardTitle>
-                      <Badge variant="outline" className="shrink-0">
-                        <Icon name="Clock" size={14} className="mr-1" />
-                        {broadcast.scheduled_time?.substring(0, 5)}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <p className="text-muted-foreground">{broadcast.scheduled_date}</p>
-                      <Button variant="outline" size="sm">
-                        <Icon name="Bell" size={16} className="mr-2" />
-                        Напомнить
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {activeSection === 'news' && (
-          <section id="news">
-            <h3 className="text-xl font-bold mb-6">Последние новости</h3>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {news.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {item.image_url && (
-                    <div className="aspect-video overflow-hidden">
-                      <img 
-                        src={item.image_url} 
-                        alt={item.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
-                  <CardHeader>
-                    <CardTitle className="text-lg leading-tight">{item.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{item.excerpt}</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">{item.published_date}</p>
-                      <Button variant="ghost" size="sm" onClick={() => setSelectedNews(item)}>
-                        Читать →
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
+        <section id="news">
+          <h3 className="text-2xl font-bold mb-6">Последние новости</h3>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {news.map((item) => (
+              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                {item.image_url && (
+                  <div className="aspect-video overflow-hidden">
+                    <img 
+                      src={item.image_url} 
+                      alt={item.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-lg leading-tight">{item.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground text-sm mb-4">{item.excerpt}</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">{item.published_date}</p>
+                    <Button variant="ghost" size="sm" onClick={() => setSelectedNews(item)}>
+                      Читать →
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
 
         {selectedNews && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedNews(null)}>
