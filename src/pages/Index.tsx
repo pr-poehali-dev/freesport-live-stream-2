@@ -15,6 +15,13 @@ const Index = () => {
 
   useEffect(() => {
     loadData();
+    
+    const hash = window.location.hash;
+    if (hash === '#news') {
+      setActiveSection('news');
+    } else if (hash === '#broadcasts') {
+      setActiveSection('broadcasts');
+    }
   }, []);
 
   const loadData = async () => {
