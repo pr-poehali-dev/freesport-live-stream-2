@@ -465,13 +465,31 @@ const Admin = () => {
                       />
                     </div>
                     <div>
-                      <Label>URL изображения</Label>
-                      <Input
-                        value={editingNews.image_url}
-                        onChange={(e) =>
-                          setEditingNews({ ...editingNews, image_url: e.target.value })
-                        }
-                      />
+                      <Label>Изображение</Label>
+                      <div className="space-y-2">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = () => {
+                                const base64 = reader.result as string;
+                                setEditingNews({ ...editingNews, image_url: base64 });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                        {editingNews.image_url && (
+                          <img 
+                            src={editingNews.image_url} 
+                            alt="Preview" 
+                            className="w-full max-w-sm rounded border"
+                          />
+                        )}
+                      </div>
                     </div>
                     <div>
                       <Label>Дата публикации</Label>
