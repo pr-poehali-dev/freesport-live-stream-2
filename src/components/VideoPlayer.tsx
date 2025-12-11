@@ -30,9 +30,9 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
         const videoId = pathParts.split('/videos/')[1];
         return `https://kick.com/${channelName}/videos/${videoId}`;
       } else {
-        // Для живых стримов
+        // Для живых стримов - используем официальный embed плеер
         const channelName = pathParts?.split('/')[0];
-        return `https://player.kick.com/${channelName}`;
+        return `https://player.kick.com/${channelName}?muted=false`;
       }
     }
     return url;
@@ -47,7 +47,8 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox"
+            referrerPolicy="no-referrer-when-downgrade"
             style={{ colorScheme: 'normal' }}
           />
         ) : (
