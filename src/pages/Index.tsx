@@ -11,6 +11,7 @@ const Index = () => {
   const [news, setNews] = useState<any[]>([]);
   const [liveBroadcast, setLiveBroadcast] = useState<any>(null);
   const [selectedNews, setSelectedNews] = useState<any>(null);
+  const [selectedBroadcast, setSelectedBroadcast] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -60,7 +61,11 @@ const Index = () => {
           <h3 className="text-2xl font-bold mb-6">Предстоящие трансляции</h3>
           <div className="grid gap-4 md:grid-cols-2">
             {broadcasts.map((broadcast) => (
-              <Card key={broadcast.id} className="hover:shadow-lg transition-shadow">
+              <Card 
+                key={broadcast.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setSelectedBroadcast(broadcast)}
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <CardTitle className="text-lg">{broadcast.title}</CardTitle>
@@ -108,6 +113,36 @@ const Index = () => {
             ))}
           </div>
         </section>
+
+        {selectedBroadcast && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedBroadcast(null)}>
+            <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <CardTitle className="text-2xl">{selectedBroadcast.title}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedBroadcast(null)}>
+                    <Icon name="X" size={20} />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Icon name="Calendar" size={18} />
+                    <span>{selectedBroadcast.scheduled_date}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Icon name="Clock" size={18} />
+                    <span>{selectedBroadcast.scheduled_time}</span>
+                  </div>
+                </div>
+                {selectedBroadcast.description && (
+                  <p className="text-lg leading-relaxed">{selectedBroadcast.description}</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {selectedNews && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedNews(null)}>
