@@ -71,13 +71,7 @@ const Index = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground">{broadcast.scheduled_date}</p>
-                    <Button variant="outline" size="sm">
-                      <Icon name="Bell" size={16} className="mr-2" />
-                      Напомнить
-                    </Button>
-                  </div>
+                  <p className="text-muted-foreground">{broadcast.scheduled_date}</p>
                 </CardContent>
               </Card>
             ))}
