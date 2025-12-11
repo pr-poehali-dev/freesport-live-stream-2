@@ -19,7 +19,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   
   const isKickVideo = videoUrl.includes('kick.com');
   const isTwitchVideo = videoUrl.includes('twitch.tv');
-  const useCustomPlayer = isKickVideo || isTwitchVideo;
+  const useCustomPlayer = false;
 
   const getChannelAndPlatform = (url: string): { channel: string; platform: string } | null => {
     if (url.includes('kick.com')) {
