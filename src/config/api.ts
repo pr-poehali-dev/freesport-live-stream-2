@@ -1,0 +1,6 @@
+export const API_ENDPOINTS = {
+  auth: 'https://functions.poehali.dev/2bc348d1-354e-4ac8-87af-f22e43bb35ed',
+  changePassword: 'https://functions.poehali.dev/3f6a7e60-7696-4d84-ba95-0f00deaeda1f',
+  news: 'https://functions.poehali.dev/85778fcb-8560-48d6-9905-7e93224f8844',
+  broadcasts: 'https://functions.poehali.dev/cb454292-1eb9-4e4c-bfad-cbb5cb1be664',
+};

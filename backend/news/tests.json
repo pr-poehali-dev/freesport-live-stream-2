@@ -1,0 +1,14 @@
+{
+  "tests": [
+    {
+      "name": "Test get news",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "news": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

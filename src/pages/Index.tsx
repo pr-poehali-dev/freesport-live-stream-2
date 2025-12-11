@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import VideoPlayer from '@/components/VideoPlayer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,66 +8,53 @@ import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState<'broadcasts' | 'news'>('broadcasts');
+  const [broadcasts, setBroadcasts] = useState<any[]>([]);
+  const [news, setNews] = useState<any[]>([]);
+  const [liveBroadcast, setLiveBroadcast] = useState<any>(null);
 
-  const upcomingBroadcasts = [
-    {
-      id: 1,
-      title: 'Кубок мира по биатлону - Мужской спринт',
-      time: '15:00',
-      date: '15 декабря',
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      title: 'Лыжные гонки - Женская эстафета',
-      time: '18:30',
-      date: '15 декабря',
-      status: 'upcoming'
-    }
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const newsItems = [
-    {
-      id: 1,
-      title: 'Российские биатлонисты завоевали золото на этапе Кубка мира',
-      excerpt: 'Сборная России показала блестящий результат в смешанной эстафете, опередив команды Норвегии и Франции.',
-      date: '14 декабря',
-      image: 'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800&h=450&fit=crop'
-    },
-    {
-      id: 2,
-      title: 'Новый рекорд трассы установлен в лыжных гонках',
-      excerpt: 'На дистанции 15 км классическим стилем был установлен рекорд трассы, который продержался более 5 лет.',
-      date: '13 декабря',
-      image: 'https://images.unsplash.com/photo-1483654363457-c8ebe6f35c6d?w=800&h=450&fit=crop'
-    },
-    {
-      id: 3,
-      title: 'Анонс: грядущий этап Кубка мира в Финляндии',
-      excerpt: 'Следующий этап Кубка мира пройдет на легендарных трассах Лахти. Ожидаются напряженные борьба за лидерство.',
-      date: '12 декабря',
-      image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=800&h=450&fit=crop'
+  const loadData = async () => {
+    try {
+      const [broadcastsRes, newsRes] = await Promise.all([
+        fetch('https://functions.poehali.dev/cb454292-1eb9-4e4c-bfad-cbb5cb1be664'),
+        fetch('https://functions.poehali.dev/85778fcb-8560-48d6-9905-7e93224f8844'),
+      ]);
+      const broadcastsData = await broadcastsRes.json();
+      const newsData = await newsRes.json();
+      
+      const allBroadcasts = broadcastsData.broadcasts || [];
+      const live = allBroadcasts.find((b: any) => b.is_live);
+      setLiveBroadcast(live);
+      setBroadcasts(allBroadcasts.filter((b: any) => !b.is_live));
+      setNews(newsData.news || []);
+    } catch (error) {
+      console.error('Failed to load data:', error);
     }
-  ];
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container py-8">
-        <section className="mb-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-              <Badge variant="destructive" className="text-sm font-semibold">LIVE</Badge>
+        {liveBroadcast && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                <Badge variant="destructive" className="text-sm font-semibold">LIVE</Badge>
+              </div>
+              <h2 className="text-2xl font-bold">{liveBroadcast.title}</h2>
             </div>
-            <h2 className="text-2xl font-bold">Кубок мира - Биатлон 2024</h2>
-          </div>
-          <VideoPlayer 
-            videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ" 
-            title="Прямая трансляция: Женский индивидуальный спринт"
-          />
-        </section>
+            <VideoPlayer 
+              videoUrl={liveBroadcast.video_url} 
+              title={liveBroadcast.title}
+            />
+          </section>
+        )}
 
         <div className="flex gap-4 mb-6 border-b">
           <Button
@@ -92,20 +79,20 @@ const Index = () => {
           <section>
             <h3 className="text-xl font-bold mb-6">Предстоящие трансляции</h3>
             <div className="grid gap-4 md:grid-cols-2">
-              {upcomingBroadcasts.map((broadcast) => (
+              {broadcasts.map((broadcast) => (
                 <Card key={broadcast.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-4">
                       <CardTitle className="text-lg">{broadcast.title}</CardTitle>
                       <Badge variant="outline" className="shrink-0">
                         <Icon name="Clock" size={14} className="mr-1" />
-                        {broadcast.time}
+                        {broadcast.scheduled_time?.substring(0, 5)}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center justify-between">
-                      <p className="text-muted-foreground">{broadcast.date}</p>
+                      <p className="text-muted-foreground">{broadcast.scheduled_date}</p>
                       <Button variant="outline" size="sm">
                         <Icon name="Bell" size={16} className="mr-2" />
                         Напомнить
@@ -122,22 +109,24 @@ const Index = () => {
           <section>
             <h3 className="text-xl font-bold mb-6">Последние новости</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {newsItems.map((news) => (
-                <Card key={news.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={news.image} 
-                      alt={news.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
+              {news.map((item) => (
+                <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  {item.image_url && (
+                    <div className="aspect-video overflow-hidden">
+                      <img 
+                        src={item.image_url} 
+                        alt={item.title}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  )}
                   <CardHeader>
-                    <CardTitle className="text-lg leading-tight">{news.title}</CardTitle>
+                    <CardTitle className="text-lg leading-tight">{item.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground text-sm mb-4">{news.excerpt}</p>
+                    <p className="text-muted-foreground text-sm mb-4">{item.excerpt}</p>
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">{news.date}</p>
+                      <p className="text-xs text-muted-foreground">{item.published_date}</p>
                       <Button variant="ghost" size="sm">
                         Читать →
                       </Button>
