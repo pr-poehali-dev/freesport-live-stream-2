@@ -141,14 +141,9 @@ const Index = () => {
 
       <footer className="border-t mt-16 py-8 bg-muted/30">
         <div className="container">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Icon name="Play" size={24} className="text-primary" />
-              <span className="font-bold">Freesport</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              © 2024 Freesport. Прямые трансляции лыжных гонок и биатлона
-            </p>
+          <div className="flex items-center justify-center gap-2">
+            <Icon name="Play" size={24} className="text-primary" />
+            <span className="font-bold">Freesport</span>
           </div>
         </div>
       </footer>
