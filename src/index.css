@@ -111,4 +111,12 @@
     font-family: "Montserrat", sans-serif;
     font-weight: 700;
   }
+
+  iframe[src*="player.kick.com"] {
+    pointer-events: auto !important;
+  }
+
+  iframe[src*="player.kick.com"]::after {
+    display: none !important;
+  }
 }

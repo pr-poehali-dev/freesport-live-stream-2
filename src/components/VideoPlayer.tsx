@@ -9,6 +9,7 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const isKickVideo = videoUrl.includes('kick.com');
 
   const getEmbedUrl = (url: string) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -42,6 +43,15 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
     <div className="relative w-full bg-secondary rounded-lg overflow-hidden shadow-xl">
       <div className="relative aspect-video bg-black">
         {isPlaying ? (
+          <>
+            <style>{`
+              iframe[src*="player.kick.com"] + div,
+              iframe[src*="player.kick.com"] ~ div[class*="overlay"],
+              iframe[src*="player.kick.com"] ~ div[style*="position: absolute"] {
+                display: none !important;
+                visibility: hidden !important;
+              }
+            `}</style>
           <iframe
             src={getEmbedUrl(videoUrl)}
             className="absolute inset-0 w-full h-full border-0"
@@ -51,6 +61,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
             referrerPolicy="no-referrer-when-downgrade"
             style={{ colorScheme: 'normal' }}
           />
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary/90 to-secondary">
             <Button 
