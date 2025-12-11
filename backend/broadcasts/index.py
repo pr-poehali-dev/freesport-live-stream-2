@@ -210,42 +210,24 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 
 def get_kick_stream(channel: str) -> Optional[str]:
-    '''Получает HLS ссылку на стрим Kick через парсинг HTML страницы'''
+    '''Получает HLS ссылку на стрим Kick через API v2'''
     try:
-        url = f'https://kick.com/{channel}'
+        url = f'https://kick.com/api/v2/channels/{channel}'
         req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Cache-Control': 'max-age=0'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json',
+            'Referer': f'https://kick.com/{channel}'
         })
         
         with urllib.request.urlopen(req, timeout=10) as response:
-            html = response.read().decode('utf-8')
+            data = json.loads(response.read().decode())
             
-            import re
-            match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
+            livestream = data.get('livestream')
             
-            if not match:
-                print(f'[Kick] No __NEXT_DATA__ found for {channel}')
-                return None
-            
-            data = json.loads(match.group(1))
-            
-            props = data.get('props', {})
-            page_props = props.get('pageProps', {})
-            livestream = page_props.get('livestream')
-            
-            print(f'[Kick] Channel: {channel}, livestream data: {livestream}')
+            print(f'[Kick] Channel: {channel}, livestream: {livestream}')
             
             if not livestream:
-                print(f'[Kick] No livestream data for {channel}')
+                print(f'[Kick] Channel offline: {channel}')
                 return None
             
             is_live = livestream.get('is_live')
@@ -256,7 +238,7 @@ def get_kick_stream(channel: str) -> Optional[str]:
             if is_live and playback_url:
                 return playback_url
             
-            print(f'[Kick] Stream offline or no playback URL')
+            print(f'[Kick] Stream not live or no URL')
             return None
         
     except Exception as e:
