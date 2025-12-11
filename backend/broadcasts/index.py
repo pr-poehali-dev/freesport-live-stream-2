@@ -210,20 +210,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 
 def get_kick_stream(channel: str) -> Optional[str]:
-    '''Получает HLS ссылку на стрим Kick'''
+    '''Получает HLS ссылку на стрим Kick через парсинг HTML страницы'''
     try:
-        url = f'https://kick.com/api/v2/channels/{channel}'
+        url = f'https://kick.com/{channel}'
         req = urllib.request.Request(url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
         
         with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
+            html = response.read().decode('utf-8')
             
-            if data.get('livestream') and data['livestream'].get('is_live'):
-                playback_url = data['livestream'].get('playback_url')
-                if playback_url:
-                    return playback_url
+            import re
+            match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
+            
+            if match:
+                data = json.loads(match.group(1))
+                
+                props = data.get('props', {})
+                page_props = props.get('pageProps', {})
+                livestream = page_props.get('livestream', {})
+                
+                if livestream and livestream.get('is_live'):
+                    playback_url = livestream.get('playback_url')
+                    if playback_url:
+                        return playback_url
         
         return None
     except Exception:
