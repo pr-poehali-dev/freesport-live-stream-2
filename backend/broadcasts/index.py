@@ -1,12 +1,14 @@
 import json
 import os
 import psycopg2
-from typing import Dict, Any
+import urllib.request
+import urllib.error
+from typing import Dict, Any, Optional
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Управление трансляциями
-    Args: event - httpMethod GET/POST/PUT/DELETE
+    Управление трансляциями и получение прямых ссылок на стримы
+    Args: event - httpMethod GET/POST/PUT/DELETE, queryParams для get-stream
     Returns: HTTP response с данными или результатом
     '''
     method: str = event.get('httpMethod', 'GET')
@@ -28,6 +30,66 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor()
     
     if method == 'GET':
+        params = event.get('queryStringParameters') or {}
+        action = params.get('action')
+        
+        if action == 'get-stream':
+            channel = params.get('channel', '')
+            platform = params.get('platform', 'kick').lower()
+            
+            if not channel:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'Channel parameter required'}),
+                    'isBase64Encoded': False
+                }
+            
+            stream_url: Optional[str] = None
+            
+            if platform == 'kick':
+                stream_url = get_kick_stream(channel)
+            elif platform == 'twitch':
+                stream_url = get_twitch_stream(channel)
+            else:
+                return {
+                    'statusCode': 400,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'Unsupported platform'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not stream_url:
+                return {
+                    'statusCode': 404,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'error': 'Stream not found or offline'}),
+                    'isBase64Encoded': False
+                }
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
+                    'stream_url': stream_url,
+                    'channel': channel,
+                    'platform': platform
+                }),
+                'isBase64Encoded': False
+            }
+        
         cur.execute('''
             SELECT id, title, video_url, is_live, scheduled_time, scheduled_date 
             FROM broadcasts 
@@ -145,3 +207,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'body': json.dumps({'error': 'Method not allowed'}),
         'isBase64Encoded': False
     }
+
+
+def get_kick_stream(channel: str) -> Optional[str]:
+    '''Получает HLS ссылку на стрим Kick'''
+    try:
+        url = f'https://kick.com/api/v2/channels/{channel}'
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            
+            if data.get('livestream') and data['livestream'].get('is_live'):
+                playback_url = data['livestream'].get('playback_url')
+                if playback_url:
+                    return playback_url
+        
+        return None
+    except Exception:
+        return None
+
+
+def get_twitch_stream(channel: str) -> Optional[str]:
+    '''Получает информацию о стриме Twitch (возвращает embed URL)'''
+    try:
+        url = f'https://www.twitch.tv/{channel}'
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        })
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            html = response.read().decode()
+            
+            if 'isLiveBroadcast' in html or '"isLive":true' in html:
+                return f'https://player.twitch.tv/?channel={channel}&parent=localhost&muted=false'
+        
+        return None
+    except Exception:
+        return None
