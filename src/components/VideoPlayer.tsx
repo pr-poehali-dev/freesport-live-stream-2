@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 
@@ -10,6 +10,47 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const isKickVideo = videoUrl.includes('kick.com');
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isPlaying || !isKickVideo) return;
+
+    const hideOverlays = () => {
+      if (containerRef.current) {
+        const iframes = containerRef.current.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+          try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (iframeDoc) {
+              const style = iframeDoc.createElement('style');
+              style.textContent = `
+                div[class*="overlay"],
+                div[class*="popup"],
+                div[class*="banner"],
+                a[href*="kick.com"]:not([href*="player"]),
+                button[class*="watch"],
+                [class*="live-now"],
+                [class*="channel-info"] {
+                  display: none !important;
+                  visibility: hidden !important;
+                  opacity: 0 !important;
+                  pointer-events: none !important;
+                }
+              `;
+              iframeDoc.head?.appendChild(style);
+            }
+          } catch (e) {
+            // Cross-origin iframe, can't access
+          }
+        });
+      }
+    };
+
+    const timer = setInterval(hideOverlays, 500);
+    hideOverlays();
+
+    return () => clearInterval(timer);
+  }, [isPlaying, isKickVideo]);
 
   const getEmbedUrl = (url: string) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -40,16 +81,21 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   };
 
   return (
-    <div className="relative w-full bg-secondary rounded-lg overflow-hidden shadow-xl">
-      <div className="relative aspect-video bg-black">
+    <div ref={containerRef} className="relative w-full bg-secondary rounded-lg overflow-hidden shadow-xl">
+      <div className="relative aspect-video bg-black video-container">
         {isPlaying ? (
           <>
             <style>{`
-              iframe[src*="player.kick.com"] + div,
-              iframe[src*="player.kick.com"] ~ div[class*="overlay"],
-              iframe[src*="player.kick.com"] ~ div[style*="position: absolute"] {
+              .video-container > div:not(:first-child),
+              .video-container > a,
+              iframe[src*="player.kick.com"] + *,
+              iframe[src*="player.kick.com"] ~ div {
                 display: none !important;
                 visibility: hidden !important;
+                pointer-events: none !important;
+              }
+              iframe[src*="player.kick.com"] {
+                z-index: 10 !important;
               }
             `}</style>
           <iframe

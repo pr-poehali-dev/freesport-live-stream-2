@@ -112,11 +112,17 @@
     font-weight: 700;
   }
 
-  iframe[src*="player.kick.com"] {
-    pointer-events: auto !important;
+  .video-container {
+    isolation: isolate;
   }
 
-  iframe[src*="player.kick.com"]::after {
+  .video-container > *:not(iframe):not(style) {
     display: none !important;
+  }
+
+  iframe[src*="player.kick.com"] {
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 999 !important;
   }
 }
