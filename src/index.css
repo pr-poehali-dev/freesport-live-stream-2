@@ -117,8 +117,23 @@
     pointer-events: auto !important;
   }
 
-  iframe[src*="player.twitch.tv"] a,
-  iframe[src*="player.twitch.tv"] [class*="overlay"] {
-    display: none !important;
+  .video-player-overlay-blocker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .video-player-overlay-blocker::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
   }
 }

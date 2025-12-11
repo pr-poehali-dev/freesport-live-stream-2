@@ -28,13 +28,22 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
                 div[class*="overlay"],
                 div[class*="popup"],
                 div[class*="banner"],
+                div[class*="modal"],
                 a[href*="kick.com"]:not([href*="player"]),
                 a[href*="twitch.tv"]:not([href*="player"]),
                 button[class*="watch"],
+                button[class*="subscribe"],
+                button[class*="follow"],
                 [class*="live-now"],
                 [class*="channel-info"],
+                [class*="stream-info"],
                 [class*="tw-link"],
-                [data-a-target*="player-overlay"] {
+                [class*="tw-balloon"],
+                [class*="tw-tooltip"],
+                [data-a-target*="player-overlay"],
+                [data-a-target*="player-overlay-click-handler"],
+                [data-test-selector*="follow"],
+                [data-test-selector*="subscribe"] {
                   display: none !important;
                   visibility: hidden !important;
                   opacity: 0 !important;
@@ -109,7 +118,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       <div className="relative aspect-video bg-black">
         {isPlaying ? (
           <>
-
+          {isTwitchVideo && <div className="video-player-overlay-blocker" />}
           <iframe
             src={getEmbedUrl(videoUrl)}
             className="absolute inset-0 w-full h-full border-0"
