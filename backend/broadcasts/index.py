@@ -212,7 +212,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 def get_kick_stream(channel: str) -> Optional[str]:
     '''Получает HLS ссылку на стрим Kick через API v2'''
     try:
-        url = f'https://kick.com/api/v2/channels/{channel}'
+        url = f'https://kick.com/api/v2/channels/{channel}/livestream'
         req = urllib.request.Request(url, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Accept': 'application/json',
@@ -222,16 +222,14 @@ def get_kick_stream(channel: str) -> Optional[str]:
         with urllib.request.urlopen(req, timeout=10) as response:
             data = json.loads(response.read().decode())
             
-            livestream = data.get('livestream')
+            print(f'[Kick] Livestream data for {channel}: {data}')
             
-            print(f'[Kick] Channel: {channel}, livestream: {livestream}')
-            
-            if not livestream:
+            if not data:
                 print(f'[Kick] Channel offline: {channel}')
                 return None
             
-            is_live = livestream.get('is_live')
-            playback_url = livestream.get('playback_url')
+            is_live = data.get('is_live')
+            playback_url = data.get('playback_url')
             
             print(f'[Kick] is_live: {is_live}, playback_url: {playback_url}')
             
