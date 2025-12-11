@@ -21,6 +21,10 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
       return `https://player.vimeo.com/video/${videoId}?autoplay=1&title=0&byline=0&portrait=0`;
     }
+    if (url.includes('kick.com')) {
+      const channelName = url.split('kick.com/')[1]?.split('?')[0]?.split('/')[0];
+      return `https://player.kick.com/${channelName}?autoplay=true&muted=false`;
+    }
     return url;
   };
 
@@ -33,6 +37,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
             className="absolute inset-0 w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
+            sandbox="allow-scripts allow-same-origin allow-presentation"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary/90 to-secondary">
