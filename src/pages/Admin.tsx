@@ -207,9 +207,6 @@ const Admin = () => {
               <Button onClick={handleLogin} className="w-full">
                 Войти
               </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                Пароль по умолчанию: admin123
-              </p>
             </div>
           </CardContent>
         </Card>
