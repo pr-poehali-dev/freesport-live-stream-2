@@ -267,62 +267,50 @@ def get_twitch_stream(channel: str) -> Optional[str]:
 
 
 def get_vk_stream(video_id: str) -> Optional[str]:
-    '''Получает HLS ссылку на видео/стрим VK через парсинг HTML'''
+    '''Получает HLS ссылку через video_ext.php endpoint VK'''
     import re
     
     try:
         oid, vid = video_id.split('_')
         
-        url = f'https://vk.com/video{video_id}'
+        url = f'https://vk.com/video_ext.php?oid={oid}&id={vid}'
         req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'ru-RU,ru;q=0.9,en;q=0.8',
-            'Accept-Encoding': 'identity',
-            'Referer': 'https://vk.com/',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml',
+            'Accept-Language': 'ru-RU,ru;q=0.9',
+            'Referer': 'https://vk.com/'
         })
         
-        with urllib.request.urlopen(req, timeout=15) as response:
-            raw_data = response.read()
-            
-            try:
-                html = raw_data.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    html = raw_data.decode('windows-1251')
-                except:
-                    html = raw_data.decode('utf-8', errors='ignore')
+        with urllib.request.urlopen(req, timeout=10) as response:
+            html = response.read().decode('utf-8', errors='ignore')
             
             patterns = [
-                r'"url(\d+)":"(https?:[^"]*\.m3u8[^"]*)"',
-                r'"hls":"(https?:[^"]*\.m3u8[^"]*)"',
-                r'"dash":"(https?:[^"]*\.mpd[^"]*)"',
-                r'"url(\d+)":"(https?:[^"]*\.mp4[^"]*)"',
-                r'\\u0022url\d+\\u0022:\\u0022([^\\u]+)',
-                r'player\.vkuservideo\.net[^"\']+\.m3u8[^"\']*'
+                r'"url(\d+)":"([^"]+\.m3u8[^"]*)"',
+                r'"hls":"([^"]+\.m3u8[^"]*)"',
+                r'"url(\d+)":"([^"]+\.mp4[^"]*)"',
+                r'\\u0022url\d+\\u0022:\\u0022([^\\]+)',
+                r'"player_urls":\[([^\]]+)\]'
             ]
+            
+            found_urls = []
             
             for pattern in patterns:
                 matches = re.findall(pattern, html)
-                if matches:
-                    for match in matches:
-                        url_match = match if isinstance(match, str) else (match[1] if len(match) > 1 else match[0])
-                        
-                        if url_match:
-                            clean_url = url_match.replace('\\/', '/').replace('\\u0026', '&')
-                            
-                            if '.m3u8' in clean_url or '.mpd' in clean_url or '.mp4' in clean_url:
-                                print(f'[VK] Found stream URL: {clean_url}')
-                                return clean_url
+                for match in matches:
+                    url_match = match if isinstance(match, str) else (match[1] if len(match) > 1 else match[0])
+                    if url_match:
+                        clean_url = url_match.replace('\\/', '/').replace('\\u0026', '&').replace('\\"', '')
+                        if '.m3u8' in clean_url or '.mp4' in clean_url:
+                            found_urls.append(clean_url)
             
-            print(f'[VK] No stream URL found in HTML for {video_id}')
-            print(f'[VK] HTML sample (first 1000 chars): {html[:1000]}')
+            if found_urls:
+                best_url = found_urls[0]
+                print(f'[VK] Found stream URL: {best_url}')
+                return best_url
+            
+            print(f'[VK] No stream URL found for {video_id}')
             return None
         
     except Exception as e:
         print(f'[VK] Error for {video_id}: {str(e)}')
-        import traceback
-        print(f'[VK] Traceback: {traceback.format_exc()}')
         return None
