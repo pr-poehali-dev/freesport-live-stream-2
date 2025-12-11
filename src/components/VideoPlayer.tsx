@@ -22,8 +22,18 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       return `https://player.vimeo.com/video/${videoId}?autoplay=1&title=0&byline=0&portrait=0`;
     }
     if (url.includes('kick.com')) {
-      const channelName = url.split('kick.com/')[1]?.split('?')[0]?.split('/')[0];
-      return `https://player.kick.com/${channelName}?autoplay=true&muted=false`;
+      // Формат: kick.com/channel/videos/video-id или kick.com/channel
+      const pathParts = url.split('kick.com/')[1]?.split('?')[0];
+      
+      if (pathParts?.includes('/videos/')) {
+        // Для записей видео
+        const videoId = pathParts.split('/videos/')[1];
+        return `https://player.kick.com/video/${videoId}?autoplay=true&muted=false`;
+      } else {
+        // Для живых стримов
+        const channelName = pathParts?.split('/')[0];
+        return `https://player.kick.com/${channelName}?autoplay=true&muted=false`;
+      }
     }
     return url;
   };
