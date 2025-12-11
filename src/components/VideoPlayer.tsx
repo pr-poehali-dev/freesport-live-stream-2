@@ -52,6 +52,13 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
     return () => clearInterval(timer);
   }, [isPlaying, isKickVideo]);
 
+  const getParentDomain = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.hostname;
+    }
+    return 'localhost';
+  };
+
   const getEmbedUrl = (url: string) => {
     if (url.includes('youtube.com') || url.includes('youtu.be')) {
       const videoId = url.includes('youtu.be') 
@@ -67,14 +74,27 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       const pathParts = url.split('kick.com/')[1]?.split('?')[0];
       
       if (pathParts?.includes('/videos/')) {
-        // Для записей видео: kick.com/channel/videos/video-id
         const channelName = pathParts.split('/videos/')[0];
         const videoId = pathParts.split('/videos/')[1];
         return `https://kick.com/${channelName}/videos/${videoId}`;
       } else {
-        // Для живых стримов - используем официальный embed плеер
         const channelName = pathParts?.split('/')[0];
         return `https://player.kick.com/${channelName}?muted=false`;
+      }
+    }
+    if (url.includes('twitch.tv')) {
+      const pathParts = url.split('twitch.tv/')[1]?.split('?')[0];
+      const parent = getParentDomain();
+      
+      if (pathParts?.includes('/videos/')) {
+        const videoId = pathParts.split('/videos/')[1];
+        return `https://player.twitch.tv/?video=v${videoId}&parent=${parent}&autoplay=true`;
+      } else if (pathParts?.includes('videos/')) {
+        const videoId = pathParts.split('videos/')[1];
+        return `https://player.twitch.tv/?video=v${videoId}&parent=${parent}&autoplay=true`;
+      } else {
+        const channelName = pathParts?.split('/')[0];
+        return `https://player.twitch.tv/?channel=${channelName}&parent=${parent}&autoplay=true&muted=false`;
       }
     }
     return url;
