@@ -82,22 +82,10 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
 
   return (
     <div ref={containerRef} className="relative w-full bg-secondary rounded-lg overflow-hidden shadow-xl">
-      <div className="relative aspect-video bg-black video-container">
+      <div className="relative aspect-video bg-black">
         {isPlaying ? (
           <>
-            <style>{`
-              .video-container > div:not(:first-child),
-              .video-container > a,
-              iframe[src*="player.kick.com"] + *,
-              iframe[src*="player.kick.com"] ~ div {
-                display: none !important;
-                visibility: hidden !important;
-                pointer-events: none !important;
-              }
-              iframe[src*="player.kick.com"] {
-                z-index: 10 !important;
-              }
-            `}</style>
+
           <iframe
             src={getEmbedUrl(videoUrl)}
             className="absolute inset-0 w-full h-full border-0"

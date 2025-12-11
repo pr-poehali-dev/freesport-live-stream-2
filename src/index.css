@@ -112,17 +112,7 @@
     font-weight: 700;
   }
 
-  .video-container {
-    isolation: isolate;
-  }
-
-  .video-container > *:not(iframe):not(style) {
-    display: none !important;
-  }
-
   iframe[src*="player.kick.com"] {
     pointer-events: auto !important;
-    position: relative !important;
-    z-index: 999 !important;
   }
 }
