@@ -280,7 +280,7 @@ def get_vk_stream(video_id: str) -> Optional[str]:
         })
         
         with urllib.request.urlopen(req, timeout=10) as response:
-            html = response.read().decode()
+            html = response.read().decode('utf-8', errors='ignore')
             
             import re
             m3u8_match = re.search(r'"url(\d+)":"([^"]+\\.m3u8[^"]*)"', html)
