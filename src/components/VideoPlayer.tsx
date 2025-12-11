@@ -19,7 +19,8 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   
   const isKickVideo = videoUrl.includes('kick.com');
   const isTwitchVideo = videoUrl.includes('twitch.tv');
-  const useCustomPlayer = isKickVideo || isTwitchVideo;
+  const isVkVideo = videoUrl.includes('vk.com') || videoUrl.includes('vkvideo.ru');
+  const useCustomPlayer = isKickVideo || isTwitchVideo || isVkVideo;
 
   const getChannelAndPlatform = (url: string): { channel: string; platform: string } | null => {
     if (url.includes('kick.com')) {
@@ -37,6 +38,12 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       }
       const channel = pathParts?.split('/')[0];
       return channel ? { channel, platform: 'twitch' } : null;
+    }
+    if (url.includes('vk.com/video') || url.includes('vkvideo.ru')) {
+      const videoMatch = url.match(/video(-?\d+_\d+)/);
+      if (videoMatch) {
+        return { channel: videoMatch[1], platform: 'vk' };
+      }
     }
     return null;
   };
@@ -84,6 +91,14 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       } else {
         const channelName = pathParts?.split('/')[0];
         return `https://player.twitch.tv/?channel=${channelName}&parent=${parent}&autoplay=true&muted=false`;
+      }
+    }
+    if (url.includes('vk.com/video') || url.includes('vkvideo.ru')) {
+      const videoMatch = url.match(/video(-?\d+_\d+)/);
+      if (videoMatch) {
+        const oid = videoMatch[1].split('_')[0];
+        const id = videoMatch[1].split('_')[1];
+        return `https://vk.com/video_ext.php?oid=${oid}&id=${id}&autoplay=1`;
       }
     }
     return url;
