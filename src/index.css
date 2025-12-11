@@ -112,7 +112,13 @@
     font-weight: 700;
   }
 
-  iframe[src*="player.kick.com"] {
+  iframe[src*="player.kick.com"],
+  iframe[src*="player.twitch.tv"] {
     pointer-events: auto !important;
+  }
+
+  iframe[src*="player.twitch.tv"] a,
+  iframe[src*="player.twitch.tv"] [class*="overlay"] {
+    display: none !important;
   }
 }

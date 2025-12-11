@@ -10,10 +10,11 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const isKickVideo = videoUrl.includes('kick.com');
+  const isTwitchVideo = videoUrl.includes('twitch.tv');
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!isPlaying || !isKickVideo) return;
+    if (!isPlaying || (!isKickVideo && !isTwitchVideo)) return;
 
     const hideOverlays = () => {
       if (containerRef.current) {
@@ -28,9 +29,12 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
                 div[class*="popup"],
                 div[class*="banner"],
                 a[href*="kick.com"]:not([href*="player"]),
+                a[href*="twitch.tv"]:not([href*="player"]),
                 button[class*="watch"],
                 [class*="live-now"],
-                [class*="channel-info"] {
+                [class*="channel-info"],
+                [class*="tw-link"],
+                [data-a-target*="player-overlay"] {
                   display: none !important;
                   visibility: hidden !important;
                   opacity: 0 !important;
@@ -50,7 +54,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
     hideOverlays();
 
     return () => clearInterval(timer);
-  }, [isPlaying, isKickVideo]);
+  }, [isPlaying, isKickVideo, isTwitchVideo]);
 
   const getParentDomain = () => {
     if (typeof window !== 'undefined') {
@@ -111,7 +115,7 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
             className="absolute inset-0 w-full h-full border-0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
             referrerPolicy="no-referrer-when-downgrade"
             style={{ colorScheme: 'normal' }}
           />
