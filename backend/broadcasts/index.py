@@ -223,20 +223,35 @@ def get_kick_stream(channel: str) -> Optional[str]:
             import re
             match = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.DOTALL)
             
-            if match:
-                data = json.loads(match.group(1))
-                
-                props = data.get('props', {})
-                page_props = props.get('pageProps', {})
-                livestream = page_props.get('livestream', {})
-                
-                if livestream and livestream.get('is_live'):
-                    playback_url = livestream.get('playback_url')
-                    if playback_url:
-                        return playback_url
+            if not match:
+                print(f'[Kick] No __NEXT_DATA__ found for {channel}')
+                return None
+            
+            data = json.loads(match.group(1))
+            
+            props = data.get('props', {})
+            page_props = props.get('pageProps', {})
+            livestream = page_props.get('livestream')
+            
+            print(f'[Kick] Channel: {channel}, livestream data: {livestream}')
+            
+            if not livestream:
+                print(f'[Kick] No livestream data for {channel}')
+                return None
+            
+            is_live = livestream.get('is_live')
+            playback_url = livestream.get('playback_url')
+            
+            print(f'[Kick] is_live: {is_live}, playback_url: {playback_url}')
+            
+            if is_live and playback_url:
+                return playback_url
+            
+            print(f'[Kick] Stream offline or no playback URL')
+            return None
         
-        return None
-    except Exception:
+    except Exception as e:
+        print(f'[Kick] Error for {channel}: {str(e)}')
         return None
 
 
