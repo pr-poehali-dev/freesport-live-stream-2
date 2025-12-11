@@ -11,12 +11,16 @@ const Header = () => {
           <h1 className="text-2xl font-bold tracking-tight">Freesport</h1>
         </Link>
         <nav className="hidden md:flex items-center gap-6">
-          <Button variant="ghost" className="text-base font-medium">
-            Трансляции
-          </Button>
-          <Button variant="ghost" className="text-base font-medium">
-            Новости
-          </Button>
+          <a href="#broadcasts">
+            <Button variant="ghost" className="text-base font-medium">
+              Трансляции
+            </Button>
+          </a>
+          <a href="#news">
+            <Button variant="ghost" className="text-base font-medium">
+              Новости
+            </Button>
+          </a>
           <Link to="/admin">
             <Button variant="ghost" size="sm">
               <Icon name="Settings" size={18} className="mr-2" />

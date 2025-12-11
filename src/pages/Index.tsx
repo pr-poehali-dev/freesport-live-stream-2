@@ -11,6 +11,7 @@ const Index = () => {
   const [broadcasts, setBroadcasts] = useState<any[]>([]);
   const [news, setNews] = useState<any[]>([]);
   const [liveBroadcast, setLiveBroadcast] = useState<any>(null);
+  const [selectedNews, setSelectedNews] = useState<any>(null);
 
   useEffect(() => {
     loadData();
@@ -56,7 +57,7 @@ const Index = () => {
           </section>
         )}
 
-        <div className="flex gap-4 mb-6 border-b">
+        <div id="broadcasts" className="flex gap-4 mb-6 border-b">
           <Button
             variant={activeSection === 'broadcasts' ? 'default' : 'ghost'}
             className="rounded-b-none font-semibold"
@@ -106,7 +107,7 @@ const Index = () => {
         )}
 
         {activeSection === 'news' && (
-          <section>
+          <section id="news">
             <h3 className="text-xl font-bold mb-6">Последние новости</h3>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {news.map((item) => (
@@ -127,7 +128,7 @@ const Index = () => {
                     <p className="text-muted-foreground text-sm mb-4">{item.excerpt}</p>
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-muted-foreground">{item.published_date}</p>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => setSelectedNews(item)}>
                         Читать →
                       </Button>
                     </div>
@@ -136,6 +137,32 @@ const Index = () => {
               ))}
             </div>
           </section>
+        )}
+
+        {selectedNews && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setSelectedNews(null)}>
+            <Card className="max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-4">
+                  <CardTitle className="text-2xl">{selectedNews.title}</CardTitle>
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedNews(null)}>
+                    <Icon name="X" size={20} />
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">{selectedNews.published_date}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {selectedNews.image_url && (
+                  <img 
+                    src={selectedNews.image_url} 
+                    alt={selectedNews.title}
+                    className="w-full rounded-lg"
+                  />
+                )}
+                <p className="text-lg leading-relaxed whitespace-pre-line">{selectedNews.content}</p>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </main>
 
