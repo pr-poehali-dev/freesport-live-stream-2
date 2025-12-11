@@ -220,7 +220,9 @@ def get_kick_stream(channel: str) -> Optional[str]:
         })
         
         with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode())
+            result = json.loads(response.read().decode())
+            
+            data = result.get('data')
             
             print(f'[Kick] Livestream data for {channel}: {data}')
             
@@ -228,15 +230,14 @@ def get_kick_stream(channel: str) -> Optional[str]:
                 print(f'[Kick] Channel offline: {channel}')
                 return None
             
-            is_live = data.get('is_live')
             playback_url = data.get('playback_url')
             
-            print(f'[Kick] is_live: {is_live}, playback_url: {playback_url}')
+            print(f'[Kick] playback_url: {playback_url}')
             
-            if is_live and playback_url:
+            if playback_url:
                 return playback_url
             
-            print(f'[Kick] Stream not live or no URL')
+            print(f'[Kick] No playback URL')
             return None
         
     except Exception as e:
