@@ -22,17 +22,17 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
       return `https://player.vimeo.com/video/${videoId}?autoplay=1&title=0&byline=0&portrait=0`;
     }
     if (url.includes('kick.com')) {
-      // Формат: kick.com/channel/videos/video-id или kick.com/channel
       const pathParts = url.split('kick.com/')[1]?.split('?')[0];
       
       if (pathParts?.includes('/videos/')) {
-        // Для записей видео
+        // Для записей видео: kick.com/channel/videos/video-id
+        const channelName = pathParts.split('/videos/')[0];
         const videoId = pathParts.split('/videos/')[1];
-        return `https://player.kick.com/video/${videoId}?autoplay=true&muted=false`;
+        return `https://kick.com/${channelName}/videos/${videoId}`;
       } else {
         // Для живых стримов
         const channelName = pathParts?.split('/')[0];
-        return `https://player.kick.com/${channelName}?autoplay=true&muted=false`;
+        return `https://player.kick.com/${channelName}`;
       }
     }
     return url;
@@ -44,10 +44,11 @@ const VideoPlayer = ({ videoUrl, title }: VideoPlayerProps) => {
         {isPlaying ? (
           <iframe
             src={getEmbedUrl(videoUrl)}
-            className="absolute inset-0 w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            className="absolute inset-0 w-full h-full border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
             allowFullScreen
-            sandbox="allow-scripts allow-same-origin allow-presentation"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups"
+            style={{ colorScheme: 'normal' }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-secondary/90 to-secondary">
