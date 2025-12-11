@@ -1,6 +1,6 @@
 import json
 import os
-import bcrypt
+import hashlib
 import psycopg2
 from typing import Dict, Any
 
@@ -49,9 +49,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         if result:
             stored_hash = result[0]
-            if bcrypt.checkpw(old_password.encode('utf-8'), stored_hash.encode('utf-8')):
-                new_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-                cur.execute('UPDATE admin SET password_hash = %s, updated_at = CURRENT_TIMESTAMP', (new_hash,))
+            old_hash = hashlib.sha256(old_password.encode('utf-8')).hexdigest()
+            if old_hash == stored_hash:
+                new_hash = hashlib.sha256(new_password.encode('utf-8')).hexdigest()
+                cur.execute("UPDATE admin SET password_hash = '" + new_hash + "', updated_at = CURRENT_TIMESTAMP")
                 conn.commit()
                 cur.close()
                 conn.close()
