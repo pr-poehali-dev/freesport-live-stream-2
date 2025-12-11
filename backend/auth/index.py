@@ -29,26 +29,38 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         body_data = json.loads(event.get('body', '{}'))
         password = body_data.get('password', '')
         
+        print(f"Login attempt with password length: {len(password)}")
+        
         conn = psycopg2.connect(os.environ['DATABASE_URL'])
         cur = conn.cursor()
         
         cur.execute('SELECT password_hash FROM admin LIMIT 1')
         result = cur.fetchone()
         
+        print(f"DB result: {result is not None}")
+        
         if result:
             stored_hash = result[0]
-            if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                cur.close()
-                conn.close()
-                return {
-                    'statusCode': 200,
-                    'headers': {
-                        'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': '*'
-                    },
-                    'body': json.dumps({'success': True, 'token': 'admin-authenticated'}),
-                    'isBase64Encoded': False
-                }
+            print(f"Stored hash: {stored_hash[:20]}...")
+            
+            try:
+                password_matches = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+                print(f"Password matches: {password_matches}")
+                
+                if password_matches:
+                    cur.close()
+                    conn.close()
+                    return {
+                        'statusCode': 200,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'success': True, 'token': 'admin-authenticated'}),
+                        'isBase64Encoded': False
+                    }
+            except Exception as e:
+                print(f"Bcrypt error: {str(e)}")
         
         cur.close()
         conn.close()
